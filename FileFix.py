@@ -5,27 +5,24 @@ import datetime
 import Constants as c
 import HelperFunctions as hf
 
-c = Constants()
-hf = HelperFunctions()
-
-
 while True:
     date_time = datetime.datetime.now()
 
-    dirFormat = format(date_time.year,date_time.month,date_time.day))
-    rawformat = format(date_time.year,date_time.month,date_time.day,events)
-    fixedFormat = format(date_time.year,date_time.month,date_time.day,events[3:])
-    dirsToCreate('c.ABSOLUTE_PATH/fixed/{0}_{1}_{2}'.dirFormat, 'c.ABSOLUTE_PATH/raw/{0}_{1}_{2}'.dirFormat)
+    dirFormat = [date_time.year, date_time.month, date_time.day]
+    rawFormat = [date_time.year, date_time.month, date_time.day, events]
+    fixedFormat = [date_time.year, date_time.month, date_time.day, events[3:]]
+    dirsToCreate = ['c.ABSOLUTE_PATH/fixed/{0}_{1}_{2}'.format(dirFormat[0], dirFormat[1], dirFormat[2]),
+                    'c.ABSOLUTE_PATH/raw/{0}_{1}_{2}'.format(dirFormat[0], dirFormat[1], dirFormat[2])]
     for pathDir in dirsToCreate:
         hf.endureAndCreateDirectory(pathDir)
 
-    
-
-    event_list = os.listdir('c.ABSOLUTE_PATH/fixed/raw/{0}_{1}_{2}'.dirFormat
+    event_list = os.listdir('c.ABSOLUTE_PATH/fixed/raw/{0}_{1}_{2}'.format(dirFormat[0], dirFormat[1], dirFormat[2]))
 
     for events in event_list:
-        raw_filename = '/home/pi/AccelData/raw/{0}_{1}_{2}/{3}'.rawFormat
-        fix_filename = '/home/pi/AccelData/fixed/{0}_{1}_{2}/{3}'.fixedFormat
+        raw_filename = '/home/pi/AccelData/raw/{0}_{1}_{2}/{3}'.format(rawFormat[0], rawFormat[1], rawFormat[2],
+                                                                       rawFormat[3])
+        fix_filename = '/home/pi/AccelData/fixed/{0}_{1}_{2}/{3}'.format(fixedFormat[0], fixedFormat[1], fixedFormat[2],
+                                                                         fixedFormat[3])
         if os.path.exists(raw_filename) and not os.path.exists(fix_filename):
             time.sleep(1)
             data = np.loadtxt(raw_filename, delimiter=',')  # Import data from event as numpy array
@@ -34,11 +31,12 @@ while True:
             except IndexError as q:
                 print('Index Error: {}'.format(q))
                 break
-            except:
-                print('Something Went Wrong')
+            except Exception as w:
+                print('Something Went Wrong: {}'.format(w))
                 break
 
-            fixed_data = np.zeros(shape=(c.NUM_ACCEL_BUFFER_ROWS, c.NUM_ACCEL_BUFFER_COLUMNS))  # Create an empty array for fixed data
+            # Create an empty array for fixed data
+            fixed_data = np.zeros(shape=(c.NUM_ACCEL_BUFFER_ROWS, c.NUM_ACCEL_BUFFER_COLUMNS))
 
             ################################################################################
             # Step one:
@@ -47,10 +45,10 @@ while True:
             # Output: zero, the index of the beginning of relevant data (1 second prior to event)
             ################################################################################
             zero = 0
-            if i < ONE_SEC:
-                zero = i + TWO_SEC
+            if i < c.ONE_SEC:
+                zero = i + c.TWO_SEC
             else:
-                zero = i - ONE_SEC
+                zero = i - c.ONE_SEC
 
             ################################################################################
             # Step two:
@@ -62,8 +60,8 @@ while True:
             for counter in range(1200):
                 shiftedIndex = zero + counter
 
-                if shiftedIndex >= EVENT_TRIGGER_LOC:
-                    shiftedIndex -= EVENT_TRIGGER_LOC
+                if shiftedIndex >= c.EVENT_TRIGGER_LOC:
+                    shiftedIndex -= c.EVENT_TRIGGER_LOC
 
                 fixed_data[counter] = data[shiftedIndex]
 
